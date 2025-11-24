@@ -12,7 +12,8 @@
 		[
 			"add_executable",
 			"target_link_libraries",
-			"target_include_directories"
+			"target_include_directories",
+			"target_sources"
 		],
 		"files" : 
 		[
@@ -40,6 +41,12 @@
 				"file" : 0,
 				"line" : 59,
 				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 62,
+				"parent" : 0
 			}
 		]
 	},
@@ -48,6 +55,9 @@
 		{
 			"compileCommandFragments" : 
 			[
+				{
+					"fragment" : "-g"
+				},
 				{
 					"fragment" : "-std=c++17"
 				}
@@ -79,7 +89,8 @@
 			},
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1
 			]
 		}
 	],
@@ -88,6 +99,10 @@
 	{
 		"commandFragments" : 
 		[
+			{
+				"fragment" : "-g",
+				"role" : "flags"
+			},
 			{
 				"fragment" : "",
 				"role" : "flags"
@@ -153,7 +168,8 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1
 			]
 		}
 	],
@@ -163,6 +179,12 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "main.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 4,
+			"compileGroupIndex" : 0,
+			"path" : "models/Transaction.cc",
 			"sourceGroupIndex" : 0
 		}
 	],
