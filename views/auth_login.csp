@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Вход - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Вход</h1>
+    <form id="loginForm">
+        <label>Email
+            <input type="email" name="email" required />
+        </label>
+        <label>Пароль
+            <input type="password" name="password" required />
+        </label>
+        <button type="submit">Войти</button>
+    </form>
+    <p id="message"></p>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const body = {
+                email: form.email.value,
+                password: form.password.value
+            };
+            try {
+                const resp = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+                    document.getElementById('message').textContent = 'Вход выполнен, переходим к выбору действия...';
+                    setTimeout(() => {
+                        window.location.href = '/home';
+                    }, 800);
+                } else {
+                    const text = await resp.text();
+                    document.getElementById('message').textContent = 'Ошибка: ' + text;
+                }
+            } catch (e) {
+                document.getElementById('message').textContent = 'Ошибка сети';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
