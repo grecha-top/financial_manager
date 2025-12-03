@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Регистрация - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form id="registerForm">
+        <label>Имя
+            <input type="text" name="name" required />
+        </label>
+        <label>Email
+            <input type="email" name="email" required />
+        </label>
+        <label>Пароль
+            <input type="password" name="password" required />
+        </label>
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+    <p id="message"></p>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const body = {
+                name: form.name.value,
+                email: form.email.value,
+                password: form.password.value
+            };
+            try {
+                const resp = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (resp.ok) {
+                    document.getElementById('message').textContent = 'Регистрация успешна, перенаправление на страницу входа...';
+                    setTimeout(() => {
+                        window.location.href = '/auth/login';
+                    }, 800);
+                } else {
+                    const text = await resp.text();
+                    document.getElementById('message').textContent = 'Ошибка: ' + text;
+                }
+            } catch (e) {
+                document.getElementById('message').textContent = 'Ошибка сети';
+            }
+        });
+    </script>
+</body>
+</html>
+
+

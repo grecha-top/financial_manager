@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Категории - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Категории</h1>
+    <form id="createCategoryForm">
+        <label>Название
+            <input type="text" name="name" required />
+        </label>
+        <label>Тип
+            <select name="type" required>
+                <option value="income">Доход</option>
+                <option value="expense">Расход</option>
+            </select>
+        </label>
+        <button type="submit">Создать</button>
+    </form>
+
+    <h2>Список категорий</h2>
+    <div id="categoriesContainer">
+        <p id="loadingMessage">Загрузка...</p>
+        <div id="emptyMessage" style="display: none;">
+            <p style="color: #666; font-style: italic;">Пока не было добавлено ни одной категории</p>
+        </div>
+        <table id="categoriesTable" style="display: none; width: 100%; border-collapse: collapse; margin-top: 1em;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">ID</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Название</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Тип</th>
+                </tr>
+            </thead>
+            <tbody id="categoriesTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/auth/login';
+        }
+
+        async function loadCategories() {
+            const loadingMsg = document.getElementById('loadingMessage');
+            const emptyMsg = document.getElementById('emptyMessage');
+            const table = document.getElementById('categoriesTable');
+            const tbody = document.getElementById('categoriesTableBody');
+            
+            try {
+                const resp = await fetch('/categories', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (!resp.ok) {
+                    loadingMsg.textContent = 'Ошибка загрузки категорий';
+                    return;
+                }
+                const data = await resp.json();
+                loadingMsg.style.display = 'none';
+                
+                if (!data || data.length === 0) {
+                    emptyMsg.style.display = 'block';
+                    table.style.display = 'none';
+                } else {
+                    emptyMsg.style.display = 'none';
+                    table.style.display = 'table';
+                    tbody.innerHTML = '';
+                    data.forEach(cat => {
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid #eee';
+                        const typeText = cat.type === 'income' ? 'Доход' : 'Расход';
+                        const typeColor = cat.type === 'income' ? '#28a745' : '#dc3545';
+                        row.innerHTML = `
+                            <td style="padding: 0.5em;">${cat.id}</td>
+                            <td style="padding: 0.5em;">${escapeHtml(cat.name)}</td>
+                            <td style="padding: 0.5em; color: ${typeColor}; font-weight: bold;">${typeText}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch {
+                loadingMsg.textContent = 'Ошибка сети';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('createCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const body = {
+                name: form.name.value,
+                type: form.type.value
+            };
+            try {
+                const resp = await fetch('/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body)
+                });
+                const text = await resp.text();
+                if (resp.ok) {
+                    alert('Категория создана');
+                    form.reset();
+                    loadCategories();
+                } else {
+                    alert('Ошибка: ' + text);
+                }
+            } catch {
+                alert('Ошибка сети');
+            }
+        });
+
+        // Загружаем категории при загрузке страницы
+        loadCategories();
+    </script>
+</body>
+</html>
+
+

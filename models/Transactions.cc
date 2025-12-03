@@ -23,7 +23,7 @@ const std::string Transactions::Cols::_description = "\"description\"";
 const std::string Transactions::Cols::_created_at = "\"created_at\"";
 const std::string Transactions::primaryKeyName = "id";
 const bool Transactions::hasPrimaryKey = true;
-const std::string Transactions::tableName = "\"Transactions\"";
+const std::string Transactions::tableName = "\"transactions\"";
 
 const std::vector<typename Transactions::MetaData> Transactions::metaData_={
 {"id","int32_t","integer",4,1,1,1},

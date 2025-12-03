@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Регистрация - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form id="registerForm">
+        <label>Имя
+            <input type="text" name="name" required />
+        </label>
+        <label>Email
+            <input type="email" name="email" required />
+        </label>
+        <label>Пароль
+            <input type="password" name="password" required />
+        </label>
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+    <pre id="result"></pre>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const body = {
+                name: form.name.value,
+                email: form.email.value,
+                password: form.password.value
+            };
+            const resp = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await resp.text();
+            document.getElementById('result').textContent = data;
+        });
+    </script>
+</body>
+</html>
+
+
+

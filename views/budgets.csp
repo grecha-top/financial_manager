@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Бюджеты - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Бюджеты</h1>
+    <form id="createBudgetForm">
+        <label>Категория
+            <select name="id_category" id="categorySelect" required>
+                <option value="">Загрузка категорий...</option>
+            </select>
+            <small id="categoriesError" style="color: red; display: none;">Сначала создайте хотя бы одну категорию</small>
+        </label>
+        <label>Месяц
+            <select name="month" required>
+                <option value="1">Январь</option>
+                <option value="2">Февраль</option>
+                <option value="3">Март</option>
+                <option value="4">Апрель</option>
+                <option value="5">Май</option>
+                <option value="6">Июнь</option>
+                <option value="7">Июль</option>
+                <option value="8">Август</option>
+                <option value="9">Сентябрь</option>
+                <option value="10">Октябрь</option>
+                <option value="11">Ноябрь</option>
+                <option value="12">Декабрь</option>
+            </select>
+        </label>
+        <label>Год
+            <input type="number" name="year" min="2000" max="2100" value="2024" required />
+        </label>
+        <label>Лимит
+            <input type="text" name="limit_amount" placeholder="0.00" required />
+        </label>
+        <button type="submit" id="submitBtn">Создать бюджет</button>
+    </form>
+
+    <h2>Список бюджетов</h2>
+    <div id="budgetsContainer">
+        <p id="loadingMessage">Загрузка...</p>
+        <div id="emptyMessage" style="display: none;">
+            <p style="color: #666; font-style: italic;">Пока не было добавлено ни одного бюджета</p>
+        </div>
+        <table id="budgetsTable" style="display: none; width: 100%; border-collapse: collapse; margin-top: 1em;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">ID</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Категория</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Месяц</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Год</th>
+                    <th style="padding: 0.5em; text-align: left; border-bottom: 2px solid #ddd;">Лимит</th>
+                </tr>
+            </thead>
+            <tbody id="budgetsTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/auth/login';
+        }
+
+        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                           'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+        let categoriesCache = {};
+
+        async function loadCategoriesForDisplay() {
+            try {
+                const resp = await fetch('/categories', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (resp.ok) {
+                    const categories = await resp.json();
+                    categoriesCache = {};
+                    categories.forEach(cat => {
+                        categoriesCache[cat.id] = cat;
+                    });
+                }
+            } catch {
+                // Игнорируем ошибку, просто не будет названий категорий
+            }
+        }
+
+        async function loadBudgets() {
+            const loadingMsg = document.getElementById('loadingMessage');
+            const emptyMsg = document.getElementById('emptyMessage');
+            const table = document.getElementById('budgetsTable');
+            const tbody = document.getElementById('budgetsTableBody');
+            
+            try {
+                const resp = await fetch('/budgets', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (!resp.ok) {
+                    loadingMsg.textContent = 'Ошибка загрузки бюджетов';
+                    return;
+                }
+                const data = await resp.json();
+                loadingMsg.style.display = 'none';
+                
+                if (!data || data.length === 0) {
+                    emptyMsg.style.display = 'block';
+                    table.style.display = 'none';
+                } else {
+                    emptyMsg.style.display = 'none';
+                    table.style.display = 'table';
+                    tbody.innerHTML = '';
+                    data.forEach(budget => {
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid #eee';
+                        const monthName = monthNames[budget.month - 1] || budget.month;
+                        const category = categoriesCache[budget.id_category];
+                        const categoryName = category ? `${category.name} (${category.type === 'income' ? 'Доход' : 'Расход'})` : `Категория ID: ${budget.id_category}`;
+                        row.innerHTML = `
+                            <td style="padding: 0.5em;">${budget.id}</td>
+                            <td style="padding: 0.5em;">${escapeHtml(categoryName)}</td>
+                            <td style="padding: 0.5em;">${monthName}</td>
+                            <td style="padding: 0.5em;">${budget.year}</td>
+                            <td style="padding: 0.5em; font-weight: bold;">${escapeHtml(budget.limit_amount)} ₽</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch {
+                loadingMsg.textContent = 'Ошибка сети';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function loadCategories() {
+            const select = document.getElementById('categorySelect');
+            const errorMsg = document.getElementById('categoriesError');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            try {
+                const resp = await fetch('/categories', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (!resp.ok) {
+                    select.innerHTML = '<option value="">Ошибка загрузки категорий</option>';
+                    return;
+                }
+                const categories = await resp.json();
+                select.innerHTML = '';
+                
+                if (!categories || categories.length === 0) {
+                    select.innerHTML = '<option value="">Нет доступных категорий</option>';
+                    select.disabled = true;
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = true;
+                } else {
+                    errorMsg.style.display = 'none';
+                    submitBtn.disabled = false;
+                    select.disabled = false;
+                    select.innerHTML = '<option value="">Выберите категорию</option>';
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        const typeText = cat.type === 'income' ? 'Доход' : 'Расход';
+                        option.textContent = `${cat.name} (${typeText})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch {
+                select.innerHTML = '<option value="">Ошибка сети</option>';
+            }
+        }
+
+        document.getElementById('createBudgetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const categoryId = form.id_category.value;
+            if (!categoryId) {
+                alert('Пожалуйста, выберите категорию');
+                return;
+            }
+            const body = {
+                id_category: Number(categoryId),
+                month: Number(form.month.value),
+                year: Number(form.year.value),
+                limit_amount: form.limit_amount.value
+            };
+            try {
+                const resp = await fetch('/budgets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body)
+                });
+                const text = await resp.text();
+                if (resp.ok) {
+                    alert('Бюджет создан');
+                    form.reset();
+                    form.year.value = new Date().getFullYear();
+                    loadBudgets();
+                } else {
+                    alert('Ошибка: ' + text);
+                }
+            } catch {
+                alert('Ошибка сети');
+            }
+        });
+
+        // Загружаем категории и бюджеты при загрузке страницы
+        loadCategories();
+        loadCategoriesForDisplay().then(() => loadBudgets());
+    </script>
+</body>
+</html>
+
+

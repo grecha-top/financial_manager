@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Выход из аккаунта - Financial Manager</title>
+    <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+</head>
+<body>
+    <h1>Выход из аккаунта</h1>
+    <p>Выход из аккаунта выполняется...</p>
+    <p>Если перенаправление не произошло автоматически, <a href="/">нажмите сюда</a>.</p>
+    <script>
+        (function () {
+            try {
+                localStorage.removeItem('authToken');
+            } catch (e) {
+                // ignore
+            }
+            setTimeout(function () {
+                window.location.href = '/';
+            }, 500);
+        })();
+    </script>
+</body>
+</html>
+
+
