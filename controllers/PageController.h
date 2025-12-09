@@ -17,8 +17,7 @@ public:
 
     void Index(const drogon::HttpRequestPtr& req,
                std::function<void(const drogon::HttpResponsePtr&)> &&callback);
-    void HomePage(const drogon::HttpRequestPtr& req,
-                  std::function<void(const drogon::HttpResponsePtr&)> &&callback);
+    drogon::Task<drogon::HttpResponsePtr> HomePage(drogon::HttpRequestPtr req);
     void CategoriesPage(const drogon::HttpRequestPtr& req,
                         std::function<void(const drogon::HttpResponsePtr&)> &&callback);
     void TransactionsPage(const drogon::HttpRequestPtr& req,
