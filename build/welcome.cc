@@ -57,6 +57,9 @@ welcome_tmp_stream<<"\n";
 welcome_tmp_stream<<"\n";
 welcome_tmp_stream<<"\n";
 welcome_tmp_stream<<"\n";
+welcome_tmp_stream<<"\n";
+welcome_tmp_stream<<"\n";
+welcome_tmp_stream<<"\n";
 if(layoutName.empty())
 {
 std::string ret{std::move(welcome_tmp_stream.str())};
