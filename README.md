@@ -1,3 +1,4 @@
+### Coin-helper
 This project will help you carefully manage your own finances and your family's finances
 
 Designed by [mnonessss](https://github.com/mnonessss) and [grecha-top](https://github.com/grecha-top)
@@ -10,7 +11,11 @@ When you login the first time, you will see only your own finances. But if you h
 
 [mnonessss](https://github.com/mnonessss) created:
 1. all models using special command by Drogon Framework.
-2. Created UserController, AccountController, BudgetController, CategoryController
+2. Controllers:
+	- UserController
+	- AccountController
+	- BudgetController
+	- CategoryController
 3. views for these controllers. Designed utils for encryption and verifying passwords.
 
 [grecha-top](https://github.com/grecha-top) created:
